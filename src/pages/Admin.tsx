@@ -33,7 +33,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import PhotoUploader from '@/components/PhotoUploader';
 import type { Jersey } from '@/types';
-import { Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { Pencil, Trash2, ArrowLeft, Plus, ShoppingBag } from 'lucide-react';
 
 const JERSEY_TYPES = [
   'City Edition',
@@ -51,6 +51,7 @@ export default function Admin() {
   const navigate = useNavigate();
   const { jerseys, loading: jerseysLoading, createJersey, deleteJersey } = useJerseys();
   const [deleteTarget, setDeleteTarget] = useState<Jersey | null>(null);
+  const [activeTab, setActiveTab] = useState('manage');
 
   useEffect(() => {
     if (!authLoading && (!user || appUser?.role !== 'admin')) {
@@ -59,7 +60,14 @@ export default function Admin() {
   }, [user, appUser, authLoading, navigate]);
 
   if (authLoading || !appUser) {
-    return <div className="p-8 text-center">Chargement...</div>;
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="h-4 w-4 rounded-full border-2 border-court border-t-transparent animate-spin" />
+          Chargement...
+        </div>
+      </div>
+    );
   }
 
   const handleDelete = async () => {
@@ -74,53 +82,79 @@ export default function Admin() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
-      <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium hover:underline mb-4 -ml-2">
-          <ArrowLeft className="h-4 w-4" />
-          Retour à la galerie
-      </Link>
-
-      <Tabs defaultValue="manage">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Administration</h1>
-          <TabsList>
-            <TabsTrigger value="manage">Maillots</TabsTrigger>
-            <TabsTrigger value="create">Nouveau</TabsTrigger>
-          </TabsList>
+    <div className="px-4 py-4 sm:px-6 sm:py-8 max-w-4xl mx-auto pb-24 md:pb-8">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <Link to="/" className="shrink-0">
+          <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-lg sm:text-xl font-bold">Administration</h1>
+          <p className="text-xs text-muted-foreground">Gestion des maillots</p>
         </div>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-2 w-full max-w-xs mb-6 rounded-xl">
+          <TabsTrigger value="manage" className="rounded-lg text-xs">Maillots</TabsTrigger>
+          <TabsTrigger value="create" className="rounded-lg text-xs">Nouveau</TabsTrigger>
+        </TabsList>
 
         <TabsContent value="manage">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gérer les maillots</CardTitle>
-              <CardDescription>{jerseys.length} maillot(s) dans la collection</CardDescription>
+          <Card className="border-border/50 shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Tous les maillots</CardTitle>
+                  <CardDescription>{jerseys.length} maillot(s)</CardDescription>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setActiveTab('create')}
+                  className="rounded-xl bg-gradient-to-r from-court to-court-dark text-xs h-8"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Ajouter
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {jerseysLoading ? (
-                <p>Chargement...</p>
-              ) : jerseys.length === 0 ? (
-                <p className="text-muted-foreground">Aucun maillot pour le moment</p>
-              ) : (
                 <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl border skeleton-shimmer">
+                      <div className="h-14 w-14 rounded-lg" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3 w-3/4 rounded" />
+                        <div className="h-3 w-1/2 rounded" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : jerseys.length === 0 ? (
+                <div className="py-8 text-center">
+                  <ShoppingBag className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
+                  <p className="text-sm text-muted-foreground">Aucun maillot pour le moment</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
                   {jerseys.map((jersey) => (
                     <div
                       key={jersey.id}
-                      className="flex items-center gap-4 rounded-lg border p-3"
+                      className="flex items-center gap-3 rounded-xl border border-border/50 p-3 transition-colors hover:bg-accent/30"
                     >
-                      <div className="h-16 w-16 rounded-md overflow-hidden bg-muted shrink-0">
+                      <div className="h-14 w-14 rounded-lg overflow-hidden bg-muted shrink-0">
                         {jersey.photos?.[0] ? (
-                          <img
-                            src={jersey.photos[0]}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
+                          <img src={jersey.photos[0]} alt="" className="h-full w-full object-cover" />
                         ) : (
-                          <div className="h-full w-full bg-muted" />
+                          <div className="h-full w-full bg-gradient-to-br from-neutral-100 to-neutral-200" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{jersey.name}</p>
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-sm font-medium truncate">{jersey.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
                           {jersey.team} · {jersey.type} · {jersey.price} €
                         </p>
                       </div>
@@ -128,23 +162,26 @@ export default function Admin() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="h-8 w-8 rounded-lg"
                           onClick={() => navigate(`/admin/edit/${jersey.id}`)}
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
                         <Dialog open={deleteTarget?.id === jersey.id} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-                              <DialogTrigger render={<Button variant="ghost" size="icon">
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>} />
+                          <DialogTrigger render={
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-destructive/10">
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            </Button>
+                          } />
                           <DialogContent>
                             <DialogHeader>
                               <DialogTitle>Supprimer le maillot</DialogTitle>
                               <DialogDescription>
-                                Êtes-vous sûr de vouloir supprimer "{jersey.name}" ?
+                                Êtes-vous sûr de vouloir supprimer <strong>{jersey.name}</strong> ?
                                 Cette action est irréversible.
                               </DialogDescription>
                             </DialogHeader>
-                            <DialogFooter>
+                            <DialogFooter className="flex-col sm:flex-row gap-2">
                               <Button variant="outline" onClick={() => setDeleteTarget(null)}>
                                 Annuler
                               </Button>
@@ -168,7 +205,7 @@ export default function Admin() {
             onSubmit={async (data) => {
               await createJersey(data, user!.uid);
               toast.success('Maillot créé !');
-              navigate('/admin');
+              setActiveTab('manage');
             }}
           />
         </TabsContent>
@@ -177,7 +214,6 @@ export default function Admin() {
   );
 }
 
-// Edit page (separate route)
 export function EditJersey() {
   const { id } = useParams<{ id: string }>();
   const { user, appUser, loading: authLoading } = useAuth();
@@ -192,20 +228,30 @@ export function EditJersey() {
   }, [user, appUser, authLoading, navigate]);
 
   if (!jersey) {
-    return <div className="p-8 text-center">Maillot introuvable</div>;
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className="text-muted-foreground">Maillot introuvable</p>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-2xl">
-      <Link to="/admin" className="inline-flex items-center gap-2 text-sm font-medium hover:underline mb-4 -ml-2">
-          <ArrowLeft className="h-4 w-4" />
-          Retour à l'administration
-      </Link>
+    <div className="px-4 py-4 sm:px-6 sm:py-8 max-w-2xl mx-auto pb-24 md:pb-8">
+      <div className="flex items-center gap-3 mb-6">
+        <Link to="/admin">
+          <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-lg sm:text-xl font-bold">Modifier</h1>
+          <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-none">{jersey.name}</p>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Modifier le maillot</CardTitle>
-          <CardDescription>{jersey.name}</CardDescription>
+      <Card className="border-border/50 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Modifier le maillot</CardTitle>
         </CardHeader>
         <CardContent>
           <JerseyFormPage
@@ -261,7 +307,7 @@ function JerseyFormPage({
         existingPhotos,
       });
     } catch {
-      toast.error('Erreur lors de l\'enregistrement');
+      toast.error("Erreur lors de l'enregistrement");
     } finally {
       setSaving(false);
     }
@@ -270,45 +316,47 @@ function JerseyFormPage({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Nom du maillot *</Label>
+        <Label htmlFor="name" className="text-xs font-medium">Nom du maillot *</Label>
         <Input
           id="name"
           placeholder="Ex: Cavaliers City Edition"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          className="h-11 rounded-xl"
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="team">Équipe *</Label>
-        <Input
-          id="team"
-          placeholder="Ex: Cleveland Cavaliers"
-          value={team}
-          onChange={(e) => setTeam(e.target.value)}
-          required
-        />
-      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="team" className="text-xs font-medium">Équipe *</Label>
+          <Input
+            id="team"
+            placeholder="Ex: Cleveland Cavaliers"
+            value={team}
+            onChange={(e) => setTeam(e.target.value)}
+            required
+            className="h-11 rounded-xl"
+          />
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="type">Type *</Label>
+        <div className="space-y-2">
+          <Label htmlFor="type" className="text-xs font-medium">Type *</Label>
           <Select value={type} onValueChange={(v) => v && setType(v)} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Sélectionner un type" />
-          </SelectTrigger>
-          <SelectContent>
-            {JERSEY_TYPES.map((t) => (
-              <SelectItem key={t} value={t}>
-                {t}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            <SelectTrigger className="h-11 rounded-xl">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {JERSEY_TYPES.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="price">Prix indicatif (€) *</Label>
+        <Label htmlFor="price" className="text-xs font-medium">Prix indicatif (€) *</Label>
         <Input
           id="price"
           type="number"
@@ -318,22 +366,24 @@ function JerseyFormPage({
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           required
+          className="h-11 rounded-xl max-w-[200px]"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description" className="text-xs font-medium">Description</Label>
         <Textarea
           id="description"
           placeholder="Description du maillot..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
+          className="rounded-xl"
         />
       </div>
 
       <div className="space-y-2">
-        <Label>Photos * (3-4 recommandées)</Label>
+        <Label className="text-xs font-medium">Photos * (3-4 recommandées)</Label>
         <PhotoUploader
           photos={photos}
           existingPhotos={existingPhotos}
@@ -344,7 +394,11 @@ function JerseyFormPage({
         />
       </div>
 
-      <Button type="submit" className="w-full" disabled={saving}>
+      <Button
+        type="submit"
+        className="w-full h-11 rounded-xl bg-gradient-to-r from-court to-court-dark hover:from-court-dark hover:to-court-light shadow-sm"
+        disabled={saving}
+      >
         {saving
           ? 'Enregistrement...'
           : initialData

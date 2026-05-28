@@ -21,7 +21,7 @@ export default function App() {
             <Route path="/admin/edit/:id" element={<EditJersey />} />
           </Routes>
         </main>
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-center" richColors closeButton />
       </div>
     </BrowserRouter>
   );

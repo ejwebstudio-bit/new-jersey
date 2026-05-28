@@ -1,58 +1,115 @@
 @import "tailwindcss";
 
+@theme {
+  --color-court: #c96b2b;
+  --color-court-dark: #a5541f;
+  --color-court-light: #e8853e;
+  --color-leather: #8b4513;
+  --color-leather-dark: #5c2d0c;
+  --color-net: #f5f0e8;
+  --color-net-dark: #e0d8cc;
+  --color-lines: #1a1a2e;
+  --color-lines-light: #2d2d44;
+
+  --font-sans: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+  --font-display: 'SF Pro Display', 'Inter', system-ui, sans-serif;
+}
+
 @layer base {
   :root {
-    --background: oklch(1 0 0);
+    --background: oklch(0.97 0.01 80);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0.042 265.755);
+    --primary: oklch(0.63 0.18 42);
     --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.96 0.015 264);
-    --secondary-foreground: oklch(0.205 0.042 265.755);
-    --muted: oklch(0.96 0.015 264);
-    --muted-foreground: oklch(0.556 0.028 266.38);
-    --accent: oklch(0.96 0.015 264);
-    --accent-foreground: oklch(0.205 0.042 265.755);
+    --secondary: oklch(0.92 0.04 42);
+    --secondary-foreground: oklch(0.35 0.05 42);
+    --muted: oklch(0.95 0.01 80);
+    --muted-foreground: oklch(0.556 0.028 70);
+    --accent: oklch(0.95 0.04 42);
+    --accent-foreground: oklch(0.3 0.06 42);
     --destructive: oklch(0.577 0.2 27.33);
-    --destructive-foreground: oklch(0.577 0.2 27.33);
-    --border: oklch(0.922 0.012 264.5);
-    --input: oklch(0.922 0.012 264.5);
-    --ring: oklch(0.708 0.044 259.82);
-    --radius: 0.5rem;
+    --destructive-foreground: oklch(0.985 0 0);
+    --border: oklch(0.88 0.02 80);
+    --input: oklch(0.88 0.02 80);
+    --ring: oklch(0.63 0.18 42);
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: oklch(0.145 0 0);
+    --background: oklch(0.13 0.02 260);
     --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
+    --card: oklch(0.17 0.02 260);
     --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
+    --popover: oklch(0.17 0.02 260);
     --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0.042 265.755);
-    --secondary: oklch(0.269 0.043 257.28);
+    --primary: oklch(0.63 0.18 42);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.28 0.04 260);
     --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0.043 257.28);
-    --muted-foreground: oklch(0.708 0.044 259.82);
-    --accent: oklch(0.269 0.043 257.28);
+    --muted: oklch(0.22 0.02 260);
+    --muted-foreground: oklch(0.708 0.04 70);
+    --accent: oklch(0.28 0.04 260);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.577 0.2 27.33);
     --destructive-foreground: oklch(0.985 0 0);
-    --border: oklch(0.269 0.043 257.28);
-    --input: oklch(0.269 0.043 257.28);
-    --ring: oklch(0.708 0.044 259.82);
+    --border: oklch(0.25 0.02 260);
+    --input: oklch(0.25 0.02 260);
+    --ring: oklch(0.63 0.18 42);
   }
 }
 
 @layer base {
   * {
     border-color: var(--border);
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
   }
   body {
     background-color: var(--background);
     color: var(--foreground);
+    font-family: var(--font-sans);
+    overscroll-behavior: none;
   }
+
+  /* Scrollbar fine (mobile-first) */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+}
+
+/* Swipe indicator animation */
+@keyframes swipe-hint {
+  0%, 100% { transform: translateX(0); opacity: 0.5; }
+  50% { transform: translateX(8px); opacity: 1; }
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Safe area for modern mobile devices */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
