@@ -1,77 +1,160 @@
-<<<<<<< HEAD
-# new-jersey
-=======
-# React + TypeScript + Vite
+# New Jersey 🏀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interface de présentation de maillots de basket avec système de prix collaboratif.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 19** + **TypeScript**
+- **Vite** (build)
+- **Tailwind CSS v4** + **Shadcn/ui**
+- **Firebase** (Auth, Firestore, Storage)
+- **React Router DOM**
 
-## React Compiler
+## Pages
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Route | Description | Accès |
+|-------|-------------|-------|
+| `/` | Galerie de maillots (grille responsive) | Public |
+| `/jersey/:id` | Détail d'un maillot + proposer un prix | Membres connectés |
+| `/login` | Connexion / inscription | Anonymes |
+| `/admin` | Dashboard admin (CRUD maillots) | Admin uniquement |
+| `/admin/edit/:id` | Modifier un maillot | Admin uniquement |
 
-## Expanding the ESLint configuration
+## Configuration Firebase
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. Créer un projet Firebase
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Va sur [console.firebase.google.com](https://console.firebase.google.com/)
+2. Crée un nouveau projet (ou utilise un existant)
+3. Active ces services :
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 2. Authentication
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **Authentication → Sign-in method**
+- Activer **Email/Password**
+- Activer **Google** (configure le consentement OAuth)
+
+### 3. Firestore Database
+
+- **Firestore Database → Créer une base de données**
+- Mode test ou production (tu peux commencer en mode test)
+- Créer un **index composite** pour la galerie :
+  - Collection : `jerseys`
+  - Champs : `createdAt` (descendant)
+  - Sinon les requêtes échoueront
+
+### 4. Storage
+
+- **Storage → Démarrer**
+- Règles de sécurité (à adapter) :
+```
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /jerseys/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 5. Récupérer les identifiants
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Project settings → Général → Apps Web**
+- Copie les variables dans le fichier `.env` (voir `.env.example`)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 6. Créer un utilisateur admin
+
+Utilise le script de seed ou fais-le manuellement :
+
+**Via la console Firestore :**
+1. Crée un document dans `users/{uid_de_l_utilisateur}`
+2. Champs : `{ uid: "...", email: "...", role: "admin", displayName: "..." }`
+
+**Via le script de seed** (recommandé) :
+```bash
+cd scripts
+node seed-admin.mjs <email> <password>
 ```
->>>>>>> 5378f51 (Initial commit: maillots de basket gallery app)
+
+## Installation
+
+```bash
+# Cloner
+git clone https://github.com/ejwebstudio-bit/new-jersey.git
+cd new-jersey
+
+# Copier et remplir le .env
+cp .env.example .env
+# Éditer .env avec tes identifiants Firebase
+
+# Installer les dépendances
+npm install
+
+# Lancer en développement
+npm run dev
+
+# Build production
+npm run build
+```
+
+## Utilisation
+
+1. **Inscris-toi** via `/login`
+2. **Demande le rôle admin** à un admin existant ou via la console Firestore
+3. Une fois admin, va dans `/admin` → **Nouveau** pour ajouter des maillots
+4. Les photos uploadées vont dans Firebase Storage
+5. Les membres connectés peuvent proposer leur prix sur chaque maillot
+
+## Collection Firestore
+
+```
+jerseys/{jerseyId}
+  ├── name: string          (ex: "Cavaliers City Edition")
+  ├── team: string          (ex: "Cleveland Cavaliers")
+  ├── type: string          (ex: "City Edition", "Classic", etc.)
+  ├── price: number         (prix indicatif)
+  ├── description: string
+  ├── photos: string[]      (URLs Firebase Storage)
+  ├── createdBy: string     (uid admin)
+  └── createdAt: timestamp
+
+userPrices/{userId}_{jerseyId}
+  ├── userId: string
+  ├── jerseyId: string
+  ├── price: number
+  └── updatedAt: timestamp
+
+users/{uid}
+  ├── email: string
+  ├── role: "admin" | "member"
+  └── displayName: string
+```
+
+## Structure du projet
+
+```
+src/
+├── components/
+│   ├── ui/           # Shadcn/ui components
+│   ├── Navbar.tsx
+│   ├── JerseyCard.tsx
+│   └── PhotoUploader.tsx
+├── pages/
+│   ├── Gallery.tsx
+│   ├── JerseyDetail.tsx
+│   ├── Login.tsx
+│   └── Admin.tsx
+├── hooks/
+│   ├── useAuth.ts
+│   └── useJerseys.ts
+├── lib/
+│   ├── firebase.ts
+│   └── utils.ts
+├── types/
+│   └── index.ts
+├── App.tsx
+├── main.tsx
+└── index.css
+```
